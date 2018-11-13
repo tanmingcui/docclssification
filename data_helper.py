@@ -1,4 +1,26 @@
 import numpy as np
+import csv
+
+
+def get_x_y_labels_from_csv(csv_file_name):
+    x_raw = []
+    y_raw = []
+    labels = set()
+    with open(csv_file_name) as csv_file:
+        csv_reader = csv.reader(csv_file)
+        for row in csv_reader:
+            if len(row[0].split(' ')) < 4 and len(row[1].split(' ')) > 5:
+                x_raw.append(row[1])
+                y_raw.append(row[0])
+                labels.add(row[0])
+    labels = sorted(list(labels))
+    one_hot = np.zeros((len(labels), len(labels)), int)
+    np.fill_diagonal(one_hot, 1)
+    label_dict = dict(zip(labels, one_hot))
+
+    for pos in range(len(y_raw)):
+        y_raw[pos] = label_dict[y_raw[pos]]
+    return x_raw, y_raw, labels
 
 
 def batch_iter(data, batch_size, num_epochs, shuffle=True):
