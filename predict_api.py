@@ -7,7 +7,6 @@ app = Flask(__name__)
 
 @app.route('/predict', methods=['POST'])
 def read_data():
-    return 'hi'
     if not request.get_json():
         abort(400)
     json_data = request.get_json
@@ -17,4 +16,4 @@ def read_data():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
