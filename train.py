@@ -16,7 +16,7 @@ logging.getLogger().setLevel(logging.INFO)
 def train():
 
     x_raw, y_raw, labels = data_helper.get_x_y_labels_from_csv(sys.argv[1])
-    params = json.loads(open('parameters.json').read())
+    params = json.loads(open(sys.argv[2]).read())
 
     """Step 1: pad each sentence to the same length and map each word to an id"""
     max_document_length = max([len(x.split(' ')) for x in x_raw])

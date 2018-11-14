@@ -1,41 +1,45 @@
 import os
-import sys
 import json
 import logging
 import data_helper
 import numpy as np
 import tensorflow as tf
 from tensorflow.contrib import learn
+from settings import PARAM_FILE, CHECKPOINT_DIR, LABEL_FILE
 
 logging.getLogger().setLevel(logging.INFO)
 
 
-def predict_unseen_data():
+def predict_unseen_data(json_data):
+	"""
+	predict unseend data according to json data
+	:param json_data: received json data
+	:return: correctness rate
+	"""
+
 	"""Step 0: load trained model and parameters"""
-	params = json.loads(open('./parameters.json').read())
-	checkpoint_dir = sys.argv[1]
+	params = json.loads(open(PARAM_FILE).read())
+	checkpoint_dir = CHECKPOINT_DIR
 	if not checkpoint_dir.endswith('/'):
 		checkpoint_dir += '/'
 	checkpoint_file = tf.train.latest_checkpoint(checkpoint_dir + 'checkpoints')
 	logging.critical('Loaded the trained model: {}'.format(checkpoint_file))
 
 	"""Step 1: load data for prediction"""
-	test_file = sys.argv[2]
-	test_examples = json.loads(open(test_file).read())
+	test_examples = json_data
 
 	# labels.json was saved during training, and it has to be loaded during prediction
-	labels = json.loads(open('./labels.json').read())
+	labels = json.loads(open(LABEL_FILE).read())
 	one_hot = np.zeros((len(labels), len(labels)), int)
 	np.fill_diagonal(one_hot, 1)
 	label_dict = dict(zip(labels, one_hot))
 
-	x_raw = [example['consumer_complaint_narrative'] for example in test_examples]
-	x_test = [data_helper.clean_str(x) for x in x_raw]
+	x_test = [example['content'] for example in test_examples]
 	logging.info('The number of x_test: {}'.format(len(x_test)))
 
 	y_test = None
-	if 'product' in test_examples[0]:
-		y_raw = [example['product'] for example in test_examples]
+	if 'type' in test_examples[0]:
+		y_raw = [example['type'] for example in test_examples]
 		y_test = [label_dict[y] for y in y_raw]
 		logging.info('The number of y_test: {}'.format(len(y_test)))
 
@@ -72,14 +76,7 @@ def predict_unseen_data():
 
 		for idx, example in enumerate(test_examples):
 			example['new_prediction'] = actual_labels[idx]
-		
-		with open('./data/small_samples_prediction.json', 'w') as outfile:
-			json.dump(test_examples, outfile, indent=4)
 
 		logging.critical('The accuracy is: {}'.format(correct_predictions / float(len(y_test))))
 		logging.critical('The prediction is complete')
-
-
-if __name__ == '__main__':
-	# python3 predict.py ./trained_model_1478649295/ ./data/small_samples.json
-	predict_unseen_data()
+		return correct_predictions / float(len(y_test))

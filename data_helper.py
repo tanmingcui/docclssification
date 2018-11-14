@@ -1,18 +1,27 @@
 import numpy as np
 import csv
+import json
 
 
 def get_x_y_labels_from_csv(csv_file_name):
-    x_raw = []
-    y_raw = []
+    x_raw = list()
+    y_raw = list()
     labels = set()
+    json_data = list()
     with open(csv_file_name) as csv_file:
         csv_reader = csv.reader(csv_file)
         for row in csv_reader:
-            if len(row[0].split(' ')) < 4 and len(row[1].split(' ')) > 5:
+            if (0 < len(row[0].split(' ')) <= 5) and (6 < len(row[1].split(' ')) < 99999):
                 x_raw.append(row[1])
                 y_raw.append(row[0])
+                data = dict()
+                data['type'] = row[0]
+                data['content'] = row[1]
+                json_data.append(data)
                 labels.add(row[0])
+
+    with open('./data.json', 'w') as outfile:
+        json.dump(json_data, outfile, indent=4)
     labels = sorted(list(labels))
     one_hot = np.zeros((len(labels), len(labels)), int)
     np.fill_diagonal(one_hot, 1)
