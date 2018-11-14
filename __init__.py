@@ -5,7 +5,7 @@ import json
 app = Flask(__name__)
 
 
-@app.route('/', methods=['POST'])
+@app.route("/", methods=['POST'])
 def read_data():
     return jsonify({'hi': 'hi'})
     if not request.get_json():
@@ -16,5 +16,5 @@ def read_data():
     return jsonify({'correctness_rate': correctness_rate})
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run()
